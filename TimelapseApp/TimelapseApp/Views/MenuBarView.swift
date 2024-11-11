@@ -15,23 +15,25 @@ struct MenuBarView: View {
             VStack(spacing: 16) {
                 // Display selection section
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Select Displays:")
+                    Text("Select Display:")
                         .font(.caption)
                     
                     ForEach(screenshotManager.availableDisplays, id: \.displayID) { display in
-                        Toggle(isOn: Binding(
-                            get: { screenshotManager.selectedDisplays.contains(display) },
-                            set: { isSelected in
-                                if isSelected {
-                                    screenshotManager.selectedDisplays.insert(display)
-                                } else {
-                                    screenshotManager.selectedDisplays.remove(display)
+                        RadioButton(
+                            selected: Binding(
+                                get: { screenshotManager.selectedDisplays.contains(display) },
+                                set: { isSelected in
+                                    if isSelected {
+                                        // Clear previous selection and set new one
+                                        screenshotManager.selectedDisplays.removeAll()
+                                        screenshotManager.selectedDisplays.insert(display)
+                                    }
                                 }
+                            ),
+                            content: {
+                                DisplayPreviewView(display: display)
                             }
-                        )) {
-                            Text("Display \(display.displayID)")
-                                .font(.caption)
-                        }
+                        )
                     }
                 }
                 
