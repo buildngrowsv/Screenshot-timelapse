@@ -3,6 +3,7 @@ import ScreenCaptureKit
 import AppKit
 import CoreImage
 import CoreMedia
+import CoreImage.CIFilterBuiltins
 
 @MainActor
 class ScreenCaptureService: NSObject, ObservableObject {
@@ -152,12 +153,12 @@ class ScreenCaptureService: NSObject, ObservableObject {
             let scaleY = Double(dimensions.height) / Double(processedImage.extent.height)
             let scale = min(scaleX, scaleY) // Maintain aspect ratio
             
-            let resize = CIFilter.lanczosScaleTransform()
-            resize.inputImage = processedImage
-            resize.scale = Float(scale)
-            resize.aspectRatio = 1.0
+            let scaleTransform = CIFilter.lanczosScaleTransform()
+            scaleTransform.inputImage = processedImage
+            scaleTransform.scale = Float(scale)
+            scaleTransform.aspectRatio = 1.0
             
-            if let resizedImage = resize.outputImage {
+            if let resizedImage = scaleTransform.outputImage {
                 processedImage = resizedImage
             }
         }

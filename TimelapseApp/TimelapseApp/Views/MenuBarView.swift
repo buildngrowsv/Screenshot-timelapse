@@ -79,6 +79,21 @@ struct MenuBarView: View {
             
             Divider()
             
+            Button("Settings") {
+                let settingsWindow = NSWindow(
+                    contentRect: NSRect(x: 0, y: 0, width: 300, height: 200),
+                    styleMask: [.titled, .closable],
+                    backing: .buffered,
+                    defer: false
+                )
+                settingsWindow.title = "Settings"
+                settingsWindow.contentView = NSHostingView(
+                    rootView: SettingsView(screenshotManager: screenshotManager)
+                )
+                settingsWindow.center()
+                settingsWindow.makeKeyAndOrderFront(nil)
+            }
+            
             Button("Quit") {
                 NSApplication.shared.terminate(nil)
             }

@@ -14,8 +14,16 @@ class ScreenshotManager: ObservableObject {
     @Published private(set) var availableDisplays: [SCDisplay] = []
     @Published var selectedDisplays: Set<SCDisplay> = []
     
+    // Add to class properties
+    @Published var settings: CaptureSettings {
+        didSet {
+            screenCaptureService.settings = settings
+        }
+    }
+    
     init(screenCaptureService: ScreenCaptureService) {
         self.screenCaptureService = screenCaptureService
+        self.settings = screenCaptureService.settings
     }
     
     // Fetch available displays
