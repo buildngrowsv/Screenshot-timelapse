@@ -4,10 +4,12 @@ import SwiftUI
 @MainActor
 class MenuBarController: ObservableObject {
     private let screenCaptureService: ScreenCaptureService
+    let screenshotManager: ScreenshotManager
     private let fileManager = FileManager.default
     
     init() {
         self.screenCaptureService = ScreenCaptureService()
+        self.screenshotManager = ScreenshotManager(screenCaptureService: screenCaptureService)
         createScreenshotsDirectory()
     }
     
@@ -19,12 +21,6 @@ class MenuBarController: ObservableObject {
             try fileManager.createDirectory(at: screenshotsPath, withIntermediateDirectories: true)
         } catch {
             print("Error creating screenshots directory: \(error)")
-        }
-    }
-    
-    func captureScreenshot() {
-        Task {
-            try? await screenCaptureService.captureScreenshot()
         }
     }
 } 

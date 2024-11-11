@@ -13,7 +13,7 @@ struct TimelapseAppApp: App {
     
     var body: some Scene {
         MenuBarExtra("Timelapse", systemImage: "camera") {
-            MenuBarView()
+            MenuBarView(menuBarController: menuBarController)
                 .environmentObject(menuBarController)
         }
         .menuBarExtraStyle(.window)
