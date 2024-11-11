@@ -17,5 +17,9 @@ struct TimelapseAppApp: App {
                 .environmentObject(menuBarController)
         }
         .menuBarExtraStyle(.window)
+        
+        WindowGroup(id: "away-prompt") {
+            AwayPromptWindowView(awayDetectionService: menuBarController.screenshotManager.awayDetectionService)
+        }
     }
 }

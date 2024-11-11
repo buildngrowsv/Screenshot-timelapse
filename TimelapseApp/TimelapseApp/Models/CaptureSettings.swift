@@ -24,4 +24,14 @@ struct CaptureSettings: Equatable {
     var resolution: Resolution = .original
     var blurEnabled: Bool = false
     var blurRadius: Float = 10.0  // Default blur radius
+    var awayThresholdMinutes: Double = 5.0
+    var awayDetectionEnabled: Bool = true
+    
+    static func == (lhs: CaptureSettings, rhs: CaptureSettings) -> Bool {
+        lhs.resolution == rhs.resolution &&
+        lhs.blurEnabled == rhs.blurEnabled &&
+        lhs.blurRadius == rhs.blurRadius &&
+        lhs.awayThresholdMinutes == rhs.awayThresholdMinutes &&
+        lhs.awayDetectionEnabled == rhs.awayDetectionEnabled
+    }
 } 

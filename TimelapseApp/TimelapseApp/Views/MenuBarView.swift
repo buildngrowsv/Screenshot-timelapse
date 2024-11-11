@@ -84,6 +84,13 @@ struct MenuBarView: View {
                 Button("Quit") {
                     NSApplication.shared.terminate(nil)
                 }
+                
+                // Add test button at the bottom
+                Section {
+                    Button("Test Away Prompt") {
+                        menuBarController.screenshotManager.awayDetectionService.testAwayPrompt()
+                    }
+                }
             }
             .padding()
             .tabItem {
@@ -91,44 +98,38 @@ struct MenuBarView: View {
             }
             .tag(0)
             
-            // Settings Tab
+            // Away History Tab
             Form {
-                Section("Resolution") {
-                    Picker("Screenshot Resolution", selection: $screenshotManager.settings.resolution) {
-                        ForEach(CaptureSettings.Resolution.allCases) { resolution in
-                            Text(resolution.rawValue).tag(resolution)
+                if screenshotManager.awayPeriods.isEmpty {
+                    Text("No away periods recorded")
+                        .foregroundColor(.secondary)
+                } else {
+                    List {
+                        ForEach(screenshotManager.awayPeriods) { period in
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(period.startTime, style: .date)
+                                    .font(.headline)
+                                Text("Duration: \(formatDuration(period.duration))")
+                                    .font(.subheadline)
+                                if !period.activity.isEmpty {
+                                    Text("Activity: \(period.activity)")
+                                        .font(.body)
+                                }
+                            }
+                            .padding(.vertical, 4)
                         }
-                    }
-                }
-                
-                Section("Blur Effect") {
-                    Toggle("Enable Blur", isOn: $screenshotManager.settings.blurEnabled)
-                    
-                    if screenshotManager.settings.blurEnabled {
-                        HStack {
-                            Text("Blur Intensity")
-                            Slider(
-                                value: $screenshotManager.settings.blurRadius,
-                                in: 1...50
-                            )
-                            Text("\(Int(screenshotManager.settings.blurRadius))")
-                                .monospacedDigit()
-                                .frame(width: 30)
-                        }
-                    }
-                }
-                
-                Section {
-                    Button("Show Live Preview") {
-                        showPreviewWindow()
                     }
                 }
             }
-            .padding()
             .tabItem {
-                Label("Settings", systemImage: "gear")
+                Label("Away History", systemImage: "clock.arrow.circlepath")
             }
-            .tag(1)
+            
+            // Settings Tab (without away history)
+            SettingsView(screenshotManager: screenshotManager)
+                .tabItem {
+                    Label("Settings", systemImage: "gear")
+                }
         }
         .frame(width: 300)
         .task {
@@ -172,6 +173,17 @@ struct MenuBarView: View {
             queue: .main
         ) { _ in
             previewWindow = nil
+        }
+    }
+    
+    private func formatDuration(_ interval: TimeInterval) -> String {
+        let minutes = Int(interval / 60)
+        if minutes < 60 {
+            return "\(minutes) minutes"
+        } else {
+            let hours = minutes / 60
+            let remainingMinutes = minutes % 60
+            return "\(hours)h \(remainingMinutes)m"
         }
     }
 } 

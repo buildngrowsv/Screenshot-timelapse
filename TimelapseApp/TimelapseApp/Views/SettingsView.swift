@@ -31,6 +31,25 @@ struct SettingsView: View {
                 }
             }
             
+            Section("Away Detection") {
+                Toggle("Enable Away Detection", 
+                       isOn: $screenshotManager.settings.awayDetectionEnabled)
+                
+                if screenshotManager.settings.awayDetectionEnabled {
+                    HStack {
+                        Text("Away Threshold")
+                        Slider(
+                            value: $screenshotManager.settings.awayThresholdMinutes,
+                            in: 1...60,
+                            step: 1
+                        )
+                        Text("\(Int(screenshotManager.settings.awayThresholdMinutes)) min")
+                            .monospacedDigit()
+                            .frame(width: 50)
+                    }
+                }
+            }
+            
             Section {
                 Button("Show Live Preview") {
                     showPreviewWindow()

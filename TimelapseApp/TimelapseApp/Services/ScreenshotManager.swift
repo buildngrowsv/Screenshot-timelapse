@@ -1,29 +1,49 @@
 import Foundation
 import ScreenCaptureKit
+import Combine
 
 @MainActor
 class ScreenshotManager: ObservableObject {
     private let screenCaptureService: ScreenCaptureService
+    let awayDetectionService: AwayDetectionService
     private var timer: Timer?
+    private var cancellables = Set<AnyCancellable>()
     
     // Published properties for the UI
     @Published var isCapturing = false
     @Published var captureIntervalMinutes: Double = 1.0
+    @Published var settings: CaptureSettings
+    @Published var awayPeriods: [AwayPeriod] = []
     
     // Properties for display management
     @Published private(set) var availableDisplays: [SCDisplay] = []
     @Published var selectedDisplays: Set<SCDisplay> = []
     
-    // Add to class properties
-    @Published var settings: CaptureSettings {
-        didSet {
-            screenCaptureService.settings = settings
-        }
-    }
-    
     init(screenCaptureService: ScreenCaptureService) {
+        let initialSettings = screenCaptureService.settings
         self.screenCaptureService = screenCaptureService
-        self.settings = screenCaptureService.settings
+        self.settings = initialSettings
+        self.awayDetectionService = AwayDetectionService(settings: initialSettings)
+        
+        // Defer observation setup to the next run loop
+        Task { @MainActor in
+            print("🔄 Setting up away periods observation")
+            self.awayDetectionService.$awayPeriods
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] periods in
+                    print("📝 Received updated away periods: \(periods.count)")
+                    self?.awayPeriods = periods
+                }
+                .store(in: &cancellables)
+            
+            self.$settings
+                .dropFirst()
+                .sink { [weak self] newSettings in
+                    self?.screenCaptureService.settings = newSettings
+                    self?.awayDetectionService.updateSettings(newSettings)
+                }
+                .store(in: &cancellables)
+        }
     }
     
     // Fetch available displays
