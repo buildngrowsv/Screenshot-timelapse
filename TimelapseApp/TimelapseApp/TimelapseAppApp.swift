@@ -9,9 +9,13 @@ import SwiftUI
 
 @main
 struct TimelapseAppApp: App {
+    @StateObject private var menuBarController = MenuBarController()
+    
     var body: some Scene {
-        WindowGroup {
-            ContentView()
+        MenuBarExtra("Timelapse", systemImage: "camera") {
+            MenuBarView()
+                .environmentObject(menuBarController)
         }
+        .menuBarExtraStyle(.window)
     }
 }
