@@ -23,7 +23,7 @@ class ScreenCaptureService: NSObject, ObservableObject {
             guard let screen = content.displays.first(where: { $0.displayID == display }) else { continue }
             
             // Configure capture
-            let filter = SCContentFilter(desktopIndependentWindow: .display(screen))
+            let filter = SCContentFilter(display: screen, excludingWindows: [])
             let configuration = SCStreamConfiguration()
             
             // Create and start stream

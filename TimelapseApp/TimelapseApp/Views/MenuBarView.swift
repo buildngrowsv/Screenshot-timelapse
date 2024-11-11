@@ -3,9 +3,10 @@ import SwiftUI
 struct MenuBarView: View {
     @ObservedObject var sessionManager: SessionManager
     @ObservedObject var settings: Settings
+    @Environment(\.openWindow) private var openWindow
     
     var body: some View {
-        Menu {
+        VStack {
             Button(sessionManager.isRecording ? "Stop Recording" : "Start Recording") {
                 if sessionManager.isRecording {
                     sessionManager.stopSession()
@@ -17,7 +18,7 @@ struct MenuBarView: View {
             Divider()
             
             Button("Settings...") {
-                // Open settings window
+                openWindow(id: "settings")
             }
             
             Divider()
@@ -25,9 +26,7 @@ struct MenuBarView: View {
             Button("Quit") {
                 NSApplication.shared.terminate(nil)
             }
-        } label: {
-            Image(systemName: "record.circle")
-                .foregroundColor(sessionManager.isRecording ? .red : .gray)
         }
+        .padding(.vertical, 5)
     }
 }
