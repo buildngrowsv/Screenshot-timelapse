@@ -10,6 +10,30 @@ struct MenuBarView: View {
     
     var body: some View {
         VStack(spacing: 16) {
+            // Display selection section
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Select Displays:")
+                    .font(.caption)
+                
+                ForEach(screenshotManager.availableDisplays, id: \.displayID) { display in
+                    Toggle(isOn: Binding(
+                        get: {
+                            screenshotManager.selectedDisplays.contains(display)
+                        },
+                        set: { isSelected in
+                            if isSelected {
+                                screenshotManager.selectedDisplays.insert(display)
+                            } else {
+                                screenshotManager.selectedDisplays.remove(display)
+                            }
+                        }
+                    )) {
+                        Text("Display \(display.displayID)")
+                            .font(.caption)
+                    }
+                }
+            }
+            
             // Interval setting
             VStack(alignment: .leading, spacing: 8) {
                 Text("Capture Interval (minutes):")
@@ -61,5 +85,8 @@ struct MenuBarView: View {
         }
         .padding()
         .frame(width: 250)
+        .task {
+            await screenshotManager.fetchDisplays()
+        }
     }
 } 
