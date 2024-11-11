@@ -4,6 +4,7 @@ struct MenuBarView: View {
     @EnvironmentObject private var menuBarController: MenuBarController
     @ObservedObject private var screenshotManager: ScreenshotManager
     @State private var selectedTab = 0
+    @State private var previewWindow: NSWindow?
     
     init(menuBarController: MenuBarController) {
         self.screenshotManager = menuBarController.screenshotManager
@@ -116,6 +117,12 @@ struct MenuBarView: View {
                         }
                     }
                 }
+                
+                Section {
+                    Button("Show Live Preview") {
+                        showPreviewWindow()
+                    }
+                }
             }
             .padding()
             .tabItem {
@@ -126,6 +133,45 @@ struct MenuBarView: View {
         .frame(width: 300)
         .task {
             await screenshotManager.fetchDisplays()
+        }
+    }
+    
+    private func showPreviewWindow() {
+        if let existing = previewWindow {
+            existing.makeKeyAndOrderFront(nil)
+            return
+        }
+        
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 800, height: 500),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = "Live Preview"
+        window.contentView = NSHostingView(
+            rootView: LivePreviewWindow(screenshotManager: screenshotManager)
+        )
+        window.center()
+        
+        // Add these lines to make window stay on top
+        window.level = .floating  // Makes window stay on top
+        window.isMovableByWindowBackground = true  // Allows dragging from anywhere in the window
+        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]  // Shows on all spaces/desktops
+        
+        window.makeKeyAndOrderFront(nil)
+        
+        // Keep window reference
+        previewWindow = window
+        
+        // Clean up reference when window closes
+        window.isReleasedWhenClosed = false
+        NotificationCenter.default.addObserver(
+            forName: NSWindow.willCloseNotification,
+            object: window,
+            queue: .main
+        ) { _ in
+            previewWindow = nil
         }
     }
 } 

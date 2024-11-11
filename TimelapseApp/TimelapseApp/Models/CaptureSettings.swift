@@ -1,6 +1,6 @@
 import Foundation
 
-struct CaptureSettings {
+struct CaptureSettings: Equatable {
     enum Resolution: String, CaseIterable, Identifiable {
         case original = "Original Size"
         case res1080p = "1080p"
