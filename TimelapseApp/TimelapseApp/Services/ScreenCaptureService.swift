@@ -86,18 +86,25 @@ class ScreenCaptureService: NSObject, ObservableObject {
             let processedImage = processImage(cgImage)
             
             if let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-                let screenshotsPath = documentsPath.appendingPathComponent("TimelapseScreenshots")
+                // Create timestamp for filename
                 let timestamp = ISO8601DateFormatter().string(from: Date())
-                let imageUrl = screenshotsPath.appendingPathComponent("screenshot_\(timestamp).png")
+                let imageUrl = documentsPath.appendingPathComponent("screenshot_\(timestamp).png")
+                
+                // Ensure the directory exists
+                try? FileManager.default.createDirectory(
+                    at: documentsPath,
+                    withIntermediateDirectories: true,
+                    attributes: nil
+                )
                 
                 if let imageData = processedImage.tiffRepresentation,
                    let bitmapImage = NSBitmapImageRep(data: imageData),
                    let pngData = bitmapImage.representation(using: .png, properties: [:]) {
                     do {
                         try pngData.write(to: imageUrl)
-                        print("Successfully saved screenshot to: \(imageUrl.path)")
+                        print("📸 Saved screenshot to: \(imageUrl.path)")
                     } catch {
-                        print("Failed to write screenshot: \(error)")
+                        print("❌ Failed to write screenshot: \(error)")
                     }
                 }
             }

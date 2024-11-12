@@ -46,12 +46,12 @@ struct MenuBarView: View {
                     HStack {
                         Slider(
                             value: $screenshotManager.captureIntervalMinutes,
-                            in: 0.5...60.0,
-                            step: 0.5
+                            in: 0.01...60.01,
+                            step: 1
                         )
-                        Text(String(format: "%.1f", screenshotManager.captureIntervalMinutes))
+                        Text(String(format: "%.2f", screenshotManager.captureIntervalMinutes))
                             .monospacedDigit()
-                            .frame(width: 35)
+                            .frame(width: 45)
                     }
                 }
                 
@@ -59,8 +59,10 @@ struct MenuBarView: View {
                 HStack(spacing: 12) {
                     Button(action: {
                         if screenshotManager.isCapturing {
+                            print("🔴 Stop button pressed")
                             screenshotManager.stopCapturing()
                         } else {
+                            print("🟢 Start button pressed")
                             screenshotManager.startCapturing()
                         }
                     }) {

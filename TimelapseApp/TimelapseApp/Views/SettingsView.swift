@@ -77,6 +77,12 @@ struct SettingsView: View {
             rootView: LivePreviewWindow(screenshotManager: screenshotManager)
         )
         window.center()
+        
+        // Add these lines to make window stay on top
+        window.level = .floating  // Makes window stay on top
+        window.isMovableByWindowBackground = true  // Allows dragging from anywhere
+        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]  // Shows on all spaces/desktops
+        
         window.makeKeyAndOrderFront(nil)
         
         // Keep window reference
