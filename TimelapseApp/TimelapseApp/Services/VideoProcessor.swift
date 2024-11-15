@@ -59,24 +59,41 @@ actor VideoProcessor {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             writerInput.requestMediaDataWhenReady(on: queue) {
                 autoreleasepool {
-                    for (index, screenshotURL) in screenshots.enumerated() {
-                        guard let image = CIImage(contentsOf: screenshotURL) else {
-                            print("⚠️ Failed to load image at index \(index)")
+                    var frameIndex = 0
+                    
+                    while frameIndex < screenshots.count {
+                        // Check if writer input is ready for more data
+                        guard writerInput.isReadyForMoreMediaData else {
+                            Thread.sleep(forTimeInterval: 0.1) // Wait a bit before checking again
                             continue
                         }
                         
-                        print("🎞 Processing frame \(index + 1)/\(screenshots.count)")
+                        let screenshotURL = screenshots[frameIndex]
+                        guard let image = CIImage(contentsOf: screenshotURL) else {
+                            print("⚠️ Failed to load image at index \(frameIndex)")
+                            frameIndex += 1
+                            continue
+                        }
+                        
+                        print("🎞 Processing frame \(frameIndex + 1)/\(screenshots.count)")
                         
                         // Create frame timing
                         let frameDuration = CMTimeMake(value: 1, timescale: Int32(frameRate))
-                        let presentationTime = CMTimeMultiply(frameDuration, multiplier: Int32(index))
+                        let presentationTime = CMTimeMultiply(frameDuration, multiplier: Int32(frameIndex))
                         
                         // Create pixel buffer
-                        guard let pool = adaptor.pixelBufferPool else { continue }
+                        guard let pool = adaptor.pixelBufferPool else {
+                            frameIndex += 1
+                            continue
+                        }
+                        
                         var pixelBuffer: CVPixelBuffer?
                         CVPixelBufferPoolCreatePixelBuffer(nil, pool, &pixelBuffer)
                         
-                        guard let buffer = pixelBuffer else { continue }
+                        guard let buffer = pixelBuffer else {
+                            frameIndex += 1
+                            continue
+                        }
                         
                         // Render frame
                         self.context.render(image, to: buffer)
@@ -86,6 +103,8 @@ actor VideoProcessor {
                             continuation.resume(throwing: assetWriter.error ?? NSError())
                             return
                         }
+                        
+                        frameIndex += 1
                     }
                     
                     writerInput.markAsFinished()
